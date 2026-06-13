@@ -199,34 +199,63 @@ public class it2025004 {
                     break;
 
                     case '3': //Search and order product(s).
+                    char continueSearch;
+                    Product selectedProduct = null;
+                    boolean productFound = false;
 
-                    System.out.print("Enter the name or the category of the product you would like to search for: ");
-                    String searchDetails = input.nextLine();
+                    do {
+                        System.out.print("Enter the name or the category of the product you would like to search for: ");
+                        String searchDetails = input.nextLine();
 
-                    System.out.println("Showing results for " + searchDetails + ":");
-                    searchDetails = searchDetails.toLowerCase();
+                        System.out.println("Showing results for " + searchDetails + ":");
+                        searchDetails = searchDetails.toLowerCase();
 
-                    for (Product p : products) {
-                        if (p.getName().toLowerCase().contains(searchDetails) || p.getCategory().toLowerCase().contains(searchDetails)) {
-                            productMatches.add(p);
-                        }
-                    }
-
-                    for (Product p : productMatches) {
-                        int eshopCount = 0;
-                        for (Eshop e : eshops) {
-                            for (ProductStock stock : e.getProducts()) {
-                                if (p.getBarcode().equalsIgnoreCase(stock.getProduct().getBarcode())) {
-                                    eshopCount++;
-                                }
+                        for (Product p : products) {
+                            if (p.getName().toLowerCase().contains(searchDetails) || p.getCategory().toLowerCase().contains(searchDetails)) {
+                                productMatches.add(p);
                             }
                         }
-                        double minPrice = findLowestPrice(p.getBarcode(), eshops);
 
-                        System.out.println("Name: " + p.getName() + ", Eshops containing the product: " + eshopCount + " , Lowest price available: " +  minPrice);
-                    }
+                        for (Product p : productMatches) {
+                            int eshopCount = 0;
+                            for (Eshop e : eshops) {
+                                for (ProductStock stock : e.getProducts()) {
+                                    if (p.getBarcode().equalsIgnoreCase(stock.getProduct().getBarcode())) {
+                                    eshopCount++;
+                                    }
+                                }
+                            }
+                            double minPrice = findLowestPrice(p.getBarcode(), eshops);
 
-                    productMatches.clear(); //Not clearing the arraylist will lead to matched results stacking on each other, leading to wrong behavior.
+                            System.out.println("Barcode: " + p.getBarcode() + ", Name: " + p.getName() + ", Eshops containing the product: " + eshopCount + " , Lowest price available: " +  minPrice);
+                        }
+
+                        System.out.print("Enter the barcode of the product you want to choose, or leave the barcode empty to cancel the current search: ");
+                        String chosenProduct = input.nextLine();
+
+                        if (chosenProduct.trim().isEmpty()) {
+                            System.out.println("Canceling current search.");
+                        } else {
+                            for (Product p : productMatches) {
+                                if (chosenProduct.equals(p.getBarcode())) {
+                                    productFound = true;
+                                    System.out.println("Chosen the product " + p.getName() + ".");
+                                    selectedProduct = p;
+                                    break;
+                                } else {
+                                    System.out.println("No product listed in the search was chosen.");
+                                }
+                            }
+                            if (productFound == true) {
+                                System.out.print("Enter the quantity of the product you would like to buy: ");
+                            }
+                        }
+                        System.out.print("Would you like to make another search? [Y/N] ");
+                        inputString = input.nextLine();
+                        continueSearch = inputString.charAt(0);
+                        productMatches.clear(); //Not clearing the arraylist will lead to matched results across searches stacking on each other, leading to wrong behavior.
+                    } while (continueSearch == 'Y' || continueSearch == 'y');
+
                     break;
 
                     case 'Q': // Quitting command isn't case-sensitive. Both cases function the same.
