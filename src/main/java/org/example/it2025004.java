@@ -4,6 +4,27 @@ import java.util.Scanner;
 import java.util.ArrayList;
 
 public class it2025004 {
+    public static double findLowestPrice(String barcode, ArrayList<Eshop> eshops) {
+        double min = Double.MAX_VALUE; //Initialize min with the highest possible value.
+
+        for (Eshop e : eshops) {
+            for (ProductStock stock : e.getProducts()) {
+                if (stock.getProduct().getBarcode().equals(barcode)) {
+                    if (stock.getPrice() < min) {
+                        min = stock.getPrice();
+                    }
+                }
+            }
+        }
+
+        if (min == Double.MAX_VALUE) {
+            System.out.println("A product with that barcode was not found.");
+            return -1;
+        }
+
+        return min;
+    }
+
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
 
@@ -11,6 +32,7 @@ public class it2025004 {
 
         ArrayList<Eshop> eshops = new ArrayList<>();
         ArrayList<Product> products = new ArrayList<>();
+        ArrayList<Product> productMatches = new ArrayList<>();
 
         Eshop tempEshop;
 
@@ -49,7 +71,7 @@ public class it2025004 {
             choice = inputString.charAt(0);
 
             switch (choice) {
-                case '1': // Add a new eshop / product in the system.
+                    case '1': // Add a new eshop / product in the system.
                     for (Eshop e : eshops) {
                         System.out.println(e);
                     }
@@ -134,7 +156,7 @@ public class it2025004 {
                     System.out.println("Adding product " + tempProduct.getName() + " with price of " + productPrice + " and quantity " + productQuantity);
                     tempEshop.addProduct(tempProduct, productPrice, productQuantity);
                     break;
-                case '2': // Update price / quantity.
+                    case '2': // Update price / quantity.
                     tempEshop = null;
                     String shopDetails;
                     System.out.print("Enter the shop's website or Tax ID: ");
@@ -176,41 +198,41 @@ public class it2025004 {
                     }
                     break;
 
-                case '3': //Search and order product(s).
-                    tempProduct = null;
+                    case '3': //Search and order product(s).
 
                     System.out.print("Enter the name or the category of the product you would like to search for: ");
                     String searchDetails = input.nextLine();
-                    if (tempProduct.getName().contains(searchDetails) || tempProduct.getCategory().contains(searchDetails)) {
-                        int shopCount = 0;
-                        System.out.println("Showing results for " + searchDetails + ":");
 
-                        for (Product p : products) {
-                            shopCount++;
+                    System.out.println("Showing results for " + searchDetails + ":");
+                    searchDetails = searchDetails.toLowerCase();
 
-                            System.out.print("Name: " + p.getName() + " ");
+                    for (Product p : products) {
+                        if (p.getName().toLowerCase().contains(searchDetails) || p.getCategory().toLowerCase().contains(searchDetails)) {
+                            productMatches.add(p);
                         }
+                    }
 
-                        System.out.print("Number of eshops containing the item: " + shopCount + " ");
-
-                        double minPrice = 9999;
+                    for (Product p : productMatches) {
+                        int eshopCount = 0;
                         for (Eshop e : eshops) {
                             for (ProductStock stock : e.getProducts()) {
-                                if (stock.getPrice() < minPrice) {
-                                    minPrice = stock.getPrice();
+                                if (p.getBarcode().equalsIgnoreCase(stock.getProduct().getBarcode())) {
+                                    eshopCount++;
                                 }
                             }
                         }
-                        System.out.println("Lowest price available: " + minPrice);
-                        System.out.print("Enter the product's name: ");
+                        double minPrice = findLowestPrice(p.getBarcode(), eshops);
 
-                        String productDetails = input.nextLine();
+                        System.out.println("Name: " + p.getName() + ", Eshops containing the product: " + eshopCount + " , Lowest price available: " +  minPrice);
                     }
 
-                case 'Q': // Quitting command isn't case-sensitive. Both cases function the same.
+                    productMatches.clear(); //Not clearing the arraylist will lead to matched results stacking on each other, leading to wrong behavior.
+                    break;
+
+                    case 'Q': // Quitting command isn't case-sensitive. Both cases function the same.
 
 
-                case 'q':
+                    case 'q':
                     System.out.println("Exiting...");
                     break;
 
