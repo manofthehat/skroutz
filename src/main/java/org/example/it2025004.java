@@ -25,6 +25,32 @@ public class it2025004 {
         return min;
     }
 
+    public static Customer getCustomer(ArrayList<Customer> customers) {
+        Scanner input = new Scanner(System.in);
+
+        System.out.print("Enter your email: ");
+        String email = input.nextLine();
+
+        for (Customer c : customers) {
+            if (c.getEmail().equalsIgnoreCase(email)) {
+                System.out.println("Welcome back, " + c.getUsername() + "!");
+                return c;
+            }
+        }
+
+        System.out.println("No account found. Creating new customer...");
+
+        System.out.print("Enter your username: ");
+        String username = input.nextLine().trim();
+
+        Customer newCustomer = new Customer(username, email);
+        customers.add(newCustomer);
+
+        System.out.println("Account created successfully!");
+
+        return newCustomer;
+    }
+
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
 
@@ -33,8 +59,11 @@ public class it2025004 {
         ArrayList<Eshop> eshops = new ArrayList<>();
         ArrayList<Product> products = new ArrayList<>();
         ArrayList<Product> productMatches = new ArrayList<>();
+        ArrayList<Order> orders = new ArrayList<>();
+        ArrayList<Customer> customers = new ArrayList<>();
 
         Eshop tempEshop;
+        Cart cart = new Cart();
 
         Product p0 = new Clothing("0000", "Shorts", "Admiral", "Large","Black");
         Product p1 = new Footwear("0001", "Boots", "Bershka", "42.5", "Brown");
@@ -147,7 +176,7 @@ public class it2025004 {
                         }
                     }
                     System.out.println("Product was successfully created. Enter its price and quantity:");
-                    System.out.print("Price ");
+                    System.out.print("Price: ");
                     double productPrice = input.nextDouble();
                     input.nextLine(); // Empties the buffer.
                     System.out.print("Quantity: ");
@@ -200,10 +229,16 @@ public class it2025004 {
 
                     case '3': //Search and order product(s).
                     char continueSearch;
-                    Product selectedProduct = null;
-                    boolean productFound = false;
 
                     do {
+                        productMatches.clear(); //Not clearing the arraylist will lead to matched results across searches stacking on each other, leading to wrong behavior.
+                        boolean productFound = false;
+                        boolean shopFound = false;
+                        Product selectedProduct = null;
+                        String shopChoice;
+                        ProductStock selectedShop = null;
+                        int orderQuantity;
+
                         System.out.print("Enter the name or the category of the product you would like to search for: ");
                         String searchDetails = input.nextLine();
 
@@ -233,7 +268,7 @@ public class it2025004 {
                         System.out.print("Enter the barcode of the product you want to choose, or leave the barcode empty to cancel the current search: ");
                         String chosenProduct = input.nextLine();
 
-                        if (chosenProduct.trim().isEmpty()) {
+                        if (chosenProduct.trim().isEmpty()) { //.trim() ignores any whitespace before and after the word, ensures better user experience.
                             System.out.println("Canceling current search.");
                         } else {
                             for (Product p : productMatches) {
@@ -242,19 +277,64 @@ public class it2025004 {
                                     System.out.println("Chosen the product " + p.getName() + ".");
                                     selectedProduct = p;
                                     break;
-                                } else {
-                                    System.out.println("No product listed in the search was chosen.");
                                 }
                             }
-                            if (productFound == true) {
-                                System.out.print("Enter the quantity of the product you would like to buy: ");
+                            if (productFound) {
+                                System.out.println("A product was chosen, displaying all shops selling it:");
+
+                                for (Eshop e : eshops) {
+                                    for (ProductStock stock: e.getProducts()) {
+                                        if (stock.getProduct().getBarcode().equals(selectedProduct.getBarcode())) {
+                                            System.out.println(e + ", " + stock);
+                                        }
+                                    }
+                                }
+
+                                System.out.println("Enter your desired shop's tax ID: ");
+                                shopChoice = input.nextLine();
+
+                                for (Eshop e : eshops) {
+                                    for (ProductStock stock : e.getProducts()) {
+                                        if (e.getTaxID().equals(shopChoice) && stock.getProduct().getBarcode().equals(selectedProduct.getBarcode())) {
+                                            shopFound = true;
+                                            selectedShop = stock;
+                                        }
+                                    }
+                                }
+
+                                if (shopFound) {
+                                    System.out.print("A shop was chosen, please enter the quantity of the product you would like to buy: ");
+                                    orderQuantity = input.nextInt();
+                                    input.nextLine();
+                                    cart.updateCart(new CartItem(selectedProduct, selectedShop.getPrice(), orderQuantity));
+                                    cart.printCart();
+                                    System.out.println("The product was successfully added to the cart.\n");
+                                } else {
+                                    System.out.println("No shop listed in the search was chosen");
+                                }
+
+                            } else {
+                                System.out.println("No product listed in the search was chosen.");
                             }
                         }
                         System.out.print("Would you like to make another search? [Y/N] ");
                         inputString = input.nextLine();
                         continueSearch = inputString.charAt(0);
-                        productMatches.clear(); //Not clearing the arraylist will lead to matched results across searches stacking on each other, leading to wrong behavior.
                     } while (continueSearch == 'Y' || continueSearch == 'y');
+
+                    System.out.print("Would you like to place an order with the current cart items? [Y/N]: ");
+                    inputString = input.nextLine();
+                    char placeOrder = inputString.charAt(0);
+
+                    if (placeOrder == 'Y' || placeOrder == 'y') {
+                        Customer newCustomer = getCustomer(customers);
+
+                        Order order = new Order(cart);
+                        orders.add(order);
+                        cart = new Cart(); //Empty the existing cart by constructing a new cart instance.
+                        newCustomer.placeOrder(order);
+                        System.out.println("The order was successfully placed.");
+                    }
 
                     break;
 

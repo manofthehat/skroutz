@@ -23,8 +23,12 @@ public class CartItem {
         return this.quantity;
     }
 
+    public void setQuantity(int newQuantity) {
+        this.quantity = newQuantity;
+    }
+
     @Override
     public String toString() {
-        return String.format("Name: %s, Price: %f, Quantity: %d",this.product.getName(), this.price, this.quantity);
+        return String.format("Name: %s, Price: %.2f, Quantity: %d",this.product.getName(), this.price, this.quantity);
     }
 }

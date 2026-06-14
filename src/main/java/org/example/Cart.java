@@ -23,4 +23,14 @@ public class Cart {
             System.out.println(c.toString());
         }
     }
+
+    public void updateCart(CartItem newItem) {
+        for (CartItem cartItem : cartItems) {
+            if (cartItem.getProduct().getBarcode().equals(newItem.getProduct().getBarcode()) && cartItem.getPrice() == newItem.getPrice()) {
+                cartItem.setQuantity(newItem.getQuantity() + cartItem.getQuantity());
+                return;
+            }
+        }
+        cartItems.add(newItem);
+    }
 }
