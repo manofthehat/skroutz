@@ -11,7 +11,7 @@ public class it2025004 {
 
         for (Eshop e : eshops) {
             for (ProductStock stock : e.getProducts()) {
-                if (stock.getProduct().getBarcode().equals(barcode)) {
+                if (stock.getProduct().getBarcode().equalsIgnoreCase(barcode)) {
                     if (stock.getPrice() < min) {
                         min = stock.getPrice();
                     }
@@ -27,15 +27,13 @@ public class it2025004 {
         return min;
     }
 
-    public static Customer getCustomer(ArrayList<Customer> customers) {
-        Scanner input = new Scanner(System.in);
-
+    public static Customer getCustomer(ArrayList<Customer> customers, Scanner input) {
         System.out.print("Enter your email: ");
         String email = input.nextLine();
 
         for (Customer c : customers) {
             if (c.getEmail().equalsIgnoreCase(email)) {
-                System.out.println("Welcome back, " + c.getUsername() + "!");
+                System.out.println("Hello " + c.getUsername() + ".");
                 return c;
             }
         }
@@ -85,7 +83,7 @@ public class it2025004 {
         e1.addProduct(p0, 18.50, 5);
         e1.addProduct(p2, 5.50, 100);
 
-        char choice; // Ensures invalid inputs don't crash the program.
+        char choice;
         String inputString;
 
         System.out.println("Welcome to Skroutz.");
@@ -100,9 +98,24 @@ public class it2025004 {
             System.out.println("Q. Exit the app.");
             System.out.print("Input your choice: ");
 
-            // Inputting a single char directly isn't possible. Input a string and only grab the first char is used instead.
-            inputString = input.nextLine();
-            choice = inputString.charAt(0);
+            inputString = input.nextLine().trim();
+
+            if (inputString.equalsIgnoreCase("Q")) {
+                choice = 'Q';
+            } else {
+                try {
+                    int option = Integer.parseInt(inputString);
+
+                    if (option >= 1 && option <= 5) {
+                        choice = inputString.charAt(0);
+                    } else {
+                        choice = ' ';
+                    }
+
+                } catch (NumberFormatException e) {
+                    choice = ' ';
+                }
+            }
 
             switch (choice) {
                     case '1': // Add a new eshop / product in the system.
@@ -111,7 +124,18 @@ public class it2025004 {
                     }
                     System.out.println("Enter the shop and product you would like to add to the system.");
                     System.out.print("Shop's Website: ");
-                    String eshopWebsite = input.nextLine();
+
+                    String eshopWebsite;
+
+                    while (true) {
+                        eshopWebsite = input.nextLine();
+
+                        if (!eshopWebsite.trim().isEmpty()) {
+                            break;
+                        }
+
+                        System.out.println("Website cannot be empty. Try again: ");
+                    }
                     String eshopTaxID;
                     String eshopEmail;
                     tempEshop = null;
@@ -138,7 +162,14 @@ public class it2025004 {
                         eshops.add(tempEshop);
                     }
                     System.out.print("Enter the product's barcode: ");
-                    productBarcode = input.nextLine();
+                    while (true) {
+                        productBarcode = input.nextLine();
+                        if (!productBarcode.trim().isEmpty()) {
+                            break;
+                        }
+
+                        System.out.println("Product Barcode cannot be empty. Try again: ");
+                    }
                     for (Product p : products) {
                         if (p.getBarcode().equalsIgnoreCase(productBarcode)) {
                             tempProduct = p;
@@ -151,18 +182,61 @@ public class it2025004 {
                     if (tempProduct == null) {
                         System.out.println("A product with this barcode wasn't found. Enter the rest of its details.");
                         System.out.print("Name: ");
-                        String productName = input.nextLine();
+                        String productName;
+
+                        while (true) {
+                            productName = input.nextLine();
+
+                            if (!productName.trim().isEmpty()) {
+                                break;
+                            }
+
+                            System.out.print("Name cannot be empty. Try again: ");
+                        }
+
+
                         System.out.print("Brand: ");
-                        String productBrand = input.nextLine();
+                        String productBrand;
+
+                        while (true) {
+                            productBrand = input.nextLine();
+
+                            if (!productBrand.trim().isEmpty()) {
+                                break;
+                            }
+
+                            System.out.print("Brand cannot be empty. Try again: ");
+                        }
+
                         System.out.print("Category: ");
                         // Repeatedly ask for input until the user enters a valid product category.
                         while (tempProduct == null) {
                             String productCategory = input.nextLine();
                             if (productCategory.equalsIgnoreCase("Clothing")) {
                                 System.out.print("Size: ");
-                                String productSize = input.nextLine();
+                                String productSize;
+
+                                while (true) {
+                                    productSize = input.nextLine();
+
+                                    if (!productSize.trim().isEmpty()) {
+                                        break;
+                                    }
+
+                                    System.out.println("Size cannot be empty. Try again: ");
+                                }
                                 System.out.print("Color: ");
-                                String productColor = input.nextLine();
+                                String productColor;
+
+                                while (true) {
+                                    productColor = input.nextLine();
+
+                                    if (!productColor.trim().isEmpty()) {
+                                        break;
+                                    }
+
+                                    System.out.println("Color cannot be empty. Try again: ");
+                                }
                                 tempProduct = new Clothing(productBarcode, productName, productBrand, productSize, productColor);
                                 products.add(tempProduct);
                             } else if (productCategory.equalsIgnoreCase("Footwear")) {
@@ -182,11 +256,40 @@ public class it2025004 {
                     }
                     System.out.println("Product was successfully created. Enter its price and quantity:");
                     System.out.print("Price: ");
-                    double productPrice = input.nextDouble();
-                    input.nextLine(); // Empties the buffer.
+                    double productPrice;
+                    int productQuantity;
+
+                    while (true) {
+                        if (input.hasNextDouble()) {
+                            productPrice = input.nextDouble();
+                            input.nextLine();
+
+                            if (productPrice > 0) {
+                                break;
+                            }
+                            System.out.print("Price must be > 0. Try again: ");
+                        } else {
+                                System.out.print("Invalid price. Try again: ");
+                                input.nextLine();
+                            }
+                    }
+
                     System.out.print("Quantity: ");
-                    int productQuantity = input.nextInt();
-                    input.nextLine();
+                    while (true) {
+                        if (input.hasNextInt()) {
+                            productQuantity = input.nextInt();
+                            input.nextLine();
+
+                            if (productQuantity > 0) {
+                                break;
+                            }
+                            System.out.print("Quantity must be > 0. Try again: ");
+                        } else {
+                            System.out.print("Invalid input. Enter a number: ");
+                            input.nextLine();
+                        }
+                    }
+
                     System.out.println("Adding product " + tempProduct.getName() + " with price of " + productPrice + " and quantity " + productQuantity);
                     tempEshop.addProduct(tempProduct, productPrice, productQuantity);
                     break;
@@ -194,7 +297,16 @@ public class it2025004 {
                     tempEshop = null;
                     String shopDetails;
                     System.out.print("Enter the shop's website or Tax ID: ");
-                    shopDetails = input.nextLine();
+
+                    while (true) {
+                        shopDetails = input.nextLine();
+
+                        if (!shopDetails.trim().isEmpty()) {
+                            break;
+                        }
+
+                        System.out.println("The shop's website cannot be empty. Try again: ");
+                    }
                     for (Eshop e : eshops) {
                         if (shopDetails.equalsIgnoreCase(e.getWebsite()) || shopDetails.equalsIgnoreCase(e.getTaxID())) {
                             tempEshop = e;
@@ -207,16 +319,45 @@ public class it2025004 {
                     }
                     if (tempEshop != null) {
                         System.out.println("Enter a product's name or barcode to update.");
-                        String productDetails = input.nextLine();
+                        String productDetails;
+
+                        while (true) {
+                            productDetails  = input.nextLine();
+
+                            if (!productDetails.trim().isEmpty()) {
+                                break;
+                            }
+
+                            System.out.println("These details cannot be empty. Try again: ");
+                        }
                         for (ProductStock stock : tempEshop.getProducts()) {
                             if (productDetails.equalsIgnoreCase(stock.getProduct().getName()) || productDetails.equalsIgnoreCase(stock.getProduct().getBarcode())) {
                                 System.out.println("Enter the details you want to update.");
                                 System.out.print("Price: ");
-                                double price = input.nextDouble();
-                                input.nextLine();
+                                double price;
+
+                                while (true) {
+                                    price = input.nextDouble();
+                                    input.nextLine();
+
+                                    if (price > 0) {
+                                        break;
+                                    }
+
+                                    System.out.println("Price must be positive. Try again: ");
+                                }
                                 System.out.print("Quantity: ");
-                                int quantity = input.nextInt();
-                                input.nextLine();
+                                int quantity;
+
+                                while (true) {
+                                    quantity = input.nextInt();
+
+                                    if (quantity > 0) {
+                                        break;
+                                    }
+
+                                    System.out.println("Quantity must be positive. Try again: ");
+                                    }
                                 System.out.println("Updating the stock of product " + stock.getProduct().getName() + "...");
                                 stock.updatePrice(price);
                                 stock.updateQuantity(quantity);
@@ -237,28 +378,35 @@ public class it2025004 {
 
                     do {
                         productMatches.clear(); //Not clearing the arraylist will lead to matched results across searches stacking on each other, leading to wrong behavior.
+                        boolean showAll = false; // In case the user enters an empty string while searching for a product.
                         boolean productFound = false;
-                        boolean shopFound = false;
                         Product selectedProduct = null;
                         String shopChoice;
                         Eshop selectedEshop = null;
                         ProductStock selectedShop = null;
                         int orderQuantity;
 
-                        System.out.print("Enter the name or the category of the product you would like to search for: ");
+
+                        // Searching phase.
+                        System.out.print("Enter the name or the category of the product you would like to search for (leave it empty to search for all products): ");
                         String searchDetails = input.nextLine();
 
-                        System.out.println("Showing results for " + searchDetails + ":");
-                        searchDetails = searchDetails.toLowerCase();
+                        if (searchDetails.trim().isEmpty()) {
+                            System.out.println("Showing all results:");
+                            showAll = true;
+                        } else {
+                            System.out.println("Showing results for " + searchDetails + ":");
+                            searchDetails = searchDetails.toLowerCase();
+                        }
 
                         for (Product p : products) {
-                            if (p.getName().toLowerCase().contains(searchDetails) || p.getCategory().toLowerCase().contains(searchDetails)) {
+                            if ( showAll || p.getName().toLowerCase().contains(searchDetails) || p.getCategory().toLowerCase().contains(searchDetails)) {
                                 productMatches.add(p);
                             }
                         }
 
                         for (Product p : productMatches) {
-                            int eshopCount = 0;
+                            int eshopCount = 0; // Used to show the amount of shops selling this product.
                             for (Eshop e : eshops) {
                                 for (ProductStock stock : e.getProducts()) {
                                     if (p.getBarcode().equalsIgnoreCase(stock.getProduct().getBarcode())) {
@@ -271,10 +419,11 @@ public class it2025004 {
                             System.out.println("Barcode: " + p.getBarcode() + ", Name: " + p.getName() + ", Eshops containing the product: " + eshopCount + " , Lowest price available: " +  minPrice);
                         }
 
+                        // Selecting phase.
                         System.out.print("Enter the barcode of the product you want to choose, or leave the barcode empty to cancel the current search: ");
                         String chosenProduct = input.nextLine();
 
-                        if (chosenProduct.trim().isEmpty()) { //.trim() ignores any whitespace before and after the word, ensures better user experience.
+                        if (chosenProduct.trim().isEmpty()) {
                             System.out.println("Canceling current search.");
                         } else {
                             for (Product p : productMatches) {
@@ -296,52 +445,103 @@ public class it2025004 {
                                     }
                                 }
 
+                                // Selecting shop phase.
                                 System.out.println("Enter your desired shop's tax ID: ");
                                 shopChoice = input.nextLine();
 
+                                boolean found = false;
+
                                 for (Eshop e : eshops) {
                                     for (ProductStock stock : e.getProducts()) {
-                                        if (e.getTaxID().equals(shopChoice) && stock.getProduct().getBarcode().equals(selectedProduct.getBarcode())) {
-                                            shopFound = true;
+                                        if (e.getTaxID().equalsIgnoreCase(shopChoice) && stock.getProduct().getBarcode().equalsIgnoreCase(selectedProduct.getBarcode())) {
                                             selectedShop = stock;
                                             selectedEshop = e;
+                                            found = true;
+                                            break;
                                         }
+                                    }
+
+                                    if (found) {
+                                        break;
                                     }
                                 }
 
-                                if (shopFound) {
+                                // Quantity selection phase.
+                                if (selectedShop != null) {
+
                                     System.out.print("A shop was chosen, please enter the quantity of the product you would like to buy: ");
+
                                     orderQuantity = input.nextInt();
                                     input.nextLine();
-                                    cart.updateCart(new CartItem(selectedProduct, selectedShop.getPrice(), selectedEshop, orderQuantity));
-                                    cart.printCart();
-                                    System.out.println("The product was successfully added to the cart.\n");
+
+                                    if (orderQuantity <= 0) {
+                                        System.out.println("Quantity must be positive.");
+                                    }
+                                    else if (orderQuantity > selectedShop.getQuantity()) {
+                                        System.out.println("Not enough stock available.");
+                                    }
+                                    else { // Add item to cart and update the stock.
+                                        cart.updateCart( new CartItem(selectedProduct, selectedShop.getPrice(), selectedEshop, orderQuantity));
+
+                                        selectedShop.updateQuantity(selectedShop.getQuantity() - orderQuantity);
+
+                                        cart.printCart();
+                                        System.out.println("The product was successfully added to the cart.\n");
+                                    }
+
                                 } else {
-                                    System.out.println("No shop listed in the search was chosen");
+                                    System.out.println("Shop selection failed.");
                                 }
 
                             } else {
                                 System.out.println("No product listed in the search was chosen.");
                             }
                         }
+
+                        // Ask until the user says yes, then move on to the ordering process.
                         System.out.print("Would you like to make another search? [Y/N] ");
                         inputString = input.nextLine();
-                        continueSearch = inputString.charAt(0);
+                        if (inputString == null || inputString.trim().isEmpty()) {
+                            continueSearch = 'N';
+                        } else {
+                            continueSearch = inputString.trim().charAt(0);
+                        }
                     } while (continueSearch == 'Y' || continueSearch == 'y');
 
                     System.out.println("Current cart:");
                     cart.printCart();
 
+                    if (cart.getCartItems().isEmpty()) {
+                        System.out.println("Cart is empty.");
+                        break;
+                    }
+
                     System.out.print("Would you like to edit quantities before checkout? [Y/N]: ");
                     inputString = input.nextLine();
-                    char editCart = inputString.charAt(0);
+                    char editCart;
+
+                    if (inputString.trim().isEmpty()) {
+                        editCart = 'N';
+                    } else {
+                        editCart = inputString.trim().charAt(0);
+                    }
 
                     if (editCart == 'Y' || editCart == 'y') {
                         for (CartItem item : cart.getCartItems()) {
                             System.out.println("Current item: " + item);
                             System.out.print("Enter new quantity (or 0 to remove): ");
-                            int newQuantity = input.nextInt();
-                            input.nextLine();
+                            int newQuantity;
+
+                            while (true) {
+                                newQuantity = input.nextInt();
+                                input.nextLine();
+
+                                if (newQuantity >= 0) {
+                                    break;
+                                }
+
+                                System.out.println(("Quantity must be non negative. Try again: "));
+                            }
 
                             if (newQuantity == 0) {
                                 item.setQuantity(0);
@@ -353,17 +553,31 @@ public class it2025004 {
 
                     for (int i = 0; i < cart.getCartItems().size(); i++) {
                         if (cart.getCartItems().get(i).getQuantity() == 0) {
-                        cart.getCartItems().remove(i);
+                        cart.getCartItems().remove(i); // Assuming items with 0 quantity are to be removed.
                         i--;
                         }
                     }
 
+                    if (cart.getCartItems().isEmpty()) {
+                        System.out.println("Cart is empty.");
+                        break;
+                    }
+
                     System.out.print("Would you like to place an order with the current cart items? [Y/N]: ");
                     inputString = input.nextLine();
-                    char placeOrder = inputString.charAt(0);
+
+                    char placeOrder;
+
+                    if (inputString == null || inputString.trim().isEmpty()) {
+                        placeOrder = 'N';
+                    } else {
+                        placeOrder = inputString.trim().charAt(0);
+                    }
+
+
 
                     if (placeOrder == 'Y' || placeOrder == 'y') {
-                        Customer newCustomer = getCustomer(customers);
+                        Customer newCustomer = getCustomer(customers, input);
 
                         Order order = new Order(cart);
                         orders.add(order);
@@ -377,10 +591,15 @@ public class it2025004 {
                     case '4': //Search orders, print reports.
                         Customer foundCustomer = null;
 
+                        if (customers.isEmpty()) {
+                            System.out.println("There are no customers registered. Returning to menu.");
+                            break;
+                        }
+
                         System.out.print("Enter the username or E-mail of the customer you would like to see the orders of: ");
                         inputString = input.nextLine();
 
-                        for (Customer c : customers) {
+                        for (Customer c : customers) { // Find existing customer by email or create a new one if they're not found.
                             if (inputString.equalsIgnoreCase(c.getUsername()) || inputString.equalsIgnoreCase(c.getEmail())) {
                                 System.out.println("A customer with this username or E-mail was found.");
                                 foundCustomer = c;
@@ -403,44 +622,40 @@ public class it2025004 {
 
                         break;
 
-                    case '5': //Save to file.
-                        try {
-                           PrintWriter writer = new PrintWriter("eshops.txt");
+                case '5': // Save to file.
+                    try {
+                        PrintWriter writer = new PrintWriter("eshops.txt");
 
-                           for (Eshop e : eshops) {
-
-                            int productCount = e.getProducts().size();
+                        for (Eshop e : eshops) {
                             int orderCount = 0;
-                            double revenue = 0;
+                            int productCount = e.getProducts().size();
+                            double totalEarnings = 0;
 
-                            ArrayList<Order> countedOrders = new ArrayList<>();
+                            for (Order o : orders) {
+                                boolean belongsToEshop = false;
 
-                            for (Order order : orders) {
-                            boolean orderHasEshopProduct = false;
+                                for (CartItem item : o.getItems()) {
+                                    if (e.getTaxID().equalsIgnoreCase(item.getEshop().getTaxID())) {
+                                        totalEarnings += item.getPrice() * item.getQuantity();
+                                        belongsToEshop = true;
+                                    }
+                                }
 
-                            for (CartItem item : order.getItems()) {
-                                if (item.getEshop().getWebsite().equals(e.getWebsite())) {
-
-                                revenue += item.getPrice() * item.getQuantity();
-                                orderHasEshopProduct = true;
+                                if (belongsToEshop) {
+                                    orderCount++;
                                 }
                             }
 
-                            if (orderHasEshopProduct && !countedOrders.contains(order)) {
-                                orderCount++;
-                                countedOrders.add(order);
-                            }
+                            writer.printf("%s, %s, %d, %d, %.2f\n", e.getWebsite(), e.getTaxID(), productCount, orderCount, totalEarnings);
                         }
 
-                        writer.println(e.getWebsite() + ", " + e.getTaxID() + ", " + productCount + ", " + orderCount + ", " + revenue + " ευρώ"
-            );
-        }
-
-        writer.close();
-        System.out.println("System state saved successfully.");
-                        } catch (FileNotFoundException) {
-                            System.out.println("The file was not found.");
+                        writer.close();
+                        System.out.println("File saved successfully.");
+                    } catch (FileNotFoundException e) {
+                        System.out.println("Error creating file.");
                     }
+
+                    break;
 
                     case 'Q': //Quitting command isn't case-sensitive. Both cases function the same.
 

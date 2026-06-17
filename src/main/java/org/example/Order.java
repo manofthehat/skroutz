@@ -15,7 +15,7 @@ public class Order {
         this.items = new ArrayList<>();
 
         for (CartItem item : cart.getCartItems()) {
-            this.items.add(new CartItem(item.getProduct(), item.getPrice(), item.getQuantity()));
+            this.items.add(new CartItem(item.getProduct(), item.getPrice(), item.getEshop(), item.getQuantity()));
         }
 
         this.totalCost = calculateTotal();
