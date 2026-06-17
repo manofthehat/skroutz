@@ -2,6 +2,8 @@ package org.example;
 
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.io.PrintWriter;
+import java.io.FileNotFoundException;
 
 public class it2025004 {
     public static double findLowestPrice(String barcode, ArrayList<Eshop> eshops) {
@@ -92,6 +94,9 @@ public class it2025004 {
             System.out.println("Choose one of the following options:");
             System.out.println("1. Add a Product/Eshop to the system.");
             System.out.println("2. Update a product's stock.");
+            System.out.println("3. Search for products and place an order.");
+            System.out.println("4. Search for order history - print reports.");
+            System.out.println("5. Save current state to a file.");
             System.out.println("Q. Exit the app.");
             System.out.print("Input your choice: ");
 
@@ -236,6 +241,7 @@ public class it2025004 {
                         boolean shopFound = false;
                         Product selectedProduct = null;
                         String shopChoice;
+                        Eshop selectedEshop = null;
                         ProductStock selectedShop = null;
                         int orderQuantity;
 
@@ -298,6 +304,7 @@ public class it2025004 {
                                         if (e.getTaxID().equals(shopChoice) && stock.getProduct().getBarcode().equals(selectedProduct.getBarcode())) {
                                             shopFound = true;
                                             selectedShop = stock;
+                                            selectedEshop = e;
                                         }
                                     }
                                 }
@@ -306,7 +313,7 @@ public class it2025004 {
                                     System.out.print("A shop was chosen, please enter the quantity of the product you would like to buy: ");
                                     orderQuantity = input.nextInt();
                                     input.nextLine();
-                                    cart.updateCart(new CartItem(selectedProduct, selectedShop.getPrice(), orderQuantity));
+                                    cart.updateCart(new CartItem(selectedProduct, selectedShop.getPrice(), selectedEshop, orderQuantity));
                                     cart.printCart();
                                     System.out.println("The product was successfully added to the cart.\n");
                                 } else {
@@ -321,6 +328,35 @@ public class it2025004 {
                         inputString = input.nextLine();
                         continueSearch = inputString.charAt(0);
                     } while (continueSearch == 'Y' || continueSearch == 'y');
+
+                    System.out.println("Current cart:");
+                    cart.printCart();
+
+                    System.out.print("Would you like to edit quantities before checkout? [Y/N]: ");
+                    inputString = input.nextLine();
+                    char editCart = inputString.charAt(0);
+
+                    if (editCart == 'Y' || editCart == 'y') {
+                        for (CartItem item : cart.getCartItems()) {
+                            System.out.println("Current item: " + item);
+                            System.out.print("Enter new quantity (or 0 to remove): ");
+                            int newQuantity = input.nextInt();
+                            input.nextLine();
+
+                            if (newQuantity == 0) {
+                                item.setQuantity(0);
+                            } else {
+                                item.setQuantity(newQuantity);
+                            }
+                        }
+                    }
+
+                    for (int i = 0; i < cart.getCartItems().size(); i++) {
+                        if (cart.getCartItems().get(i).getQuantity() == 0) {
+                        cart.getCartItems().remove(i);
+                        i--;
+                        }
+                    }
 
                     System.out.print("Would you like to place an order with the current cart items? [Y/N]: ");
                     inputString = input.nextLine();
@@ -338,14 +374,82 @@ public class it2025004 {
 
                     break;
 
-                    case 'Q': // Quitting command isn't case-sensitive. Both cases function the same.
+                    case '4': //Search orders, print reports.
+                        Customer foundCustomer = null;
+
+                        System.out.print("Enter the username or E-mail of the customer you would like to see the orders of: ");
+                        inputString = input.nextLine();
+
+                        for (Customer c : customers) {
+                            if (inputString.equalsIgnoreCase(c.getUsername()) || inputString.equalsIgnoreCase(c.getEmail())) {
+                                System.out.println("A customer with this username or E-mail was found.");
+                                foundCustomer = c;
+                                break;
+                            }
+                        }
+
+                        if (foundCustomer == null) {
+                            System.out.println("A customer with this username or E-mail wasn't found");
+                        } else {
+                            System.out.println("Customer orders:");
+
+                            for (Order order : foundCustomer.getOrders()) {
+                                System.out.println(order);
+                                for (CartItem item : order.getItems()) {
+                                    System.out.println(item);
+                                }
+                            }
+                        }
+
+                        break;
+
+                    case '5': //Save to file.
+                        try {
+                           PrintWriter writer = new PrintWriter("eshops.txt");
+
+                           for (Eshop e : eshops) {
+
+                            int productCount = e.getProducts().size();
+                            int orderCount = 0;
+                            double revenue = 0;
+
+                            ArrayList<Order> countedOrders = new ArrayList<>();
+
+                            for (Order order : orders) {
+                            boolean orderHasEshopProduct = false;
+
+                            for (CartItem item : order.getItems()) {
+                                if (item.getEshop().getWebsite().equals(e.getWebsite())) {
+
+                                revenue += item.getPrice() * item.getQuantity();
+                                orderHasEshopProduct = true;
+                                }
+                            }
+
+                            if (orderHasEshopProduct && !countedOrders.contains(order)) {
+                                orderCount++;
+                                countedOrders.add(order);
+                            }
+                        }
+
+                        writer.println(e.getWebsite() + ", " + e.getTaxID() + ", " + productCount + ", " + orderCount + ", " + revenue + " ευρώ"
+            );
+        }
+
+        writer.close();
+        System.out.println("System state saved successfully.");
+                        } catch (FileNotFoundException) {
+                            System.out.println("The file was not found.");
+                    }
+
+                    case 'Q': //Quitting command isn't case-sensitive. Both cases function the same.
 
 
                     case 'q':
                     System.out.println("Exiting...");
                     break;
 
-                // Handle any other values.
+                //Handle any other values.
                 default:
                     System.out.println("Invalid Option.");
                     break;
